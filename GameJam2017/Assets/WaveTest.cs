@@ -7,6 +7,7 @@ public class WaveTest : MonoBehaviour
 {
     public float waveLth, speed = 1, height = 2;
     public float theta;
+    public GameObject prefab;
     public int tick, timeLimit = 50;
     public Vector3 start, waveMvnt = new Vector3(1, 0, 0);
 
@@ -18,11 +19,13 @@ public class WaveTest : MonoBehaviour
     {
         public Vector3 start;
         public float length;
+        public GameObject wavePeice;
 
-        public RayWave(Vector3 spwnPnt, float lgth)
+        public RayWave(Vector3 spwnPnt, float lgth, GameObject pref)
         {
             this.length = lgth;
             this.start = spwnPnt;
+            this.wavePeice = pref;
         }
     }
 
@@ -42,27 +45,35 @@ public class WaveTest : MonoBehaviour
 
     void WaveGen()
     {
-
+        
         tick++;
         if (tick >= timeLimit)
         {
-            if (theta >= 6.30f)
+            if (theta >= Mathf.PI)
             {
                 wave = false;
                 tick = 0;
                 theta = 0;
-                height = Random.Range(0, 5);
+                height = Random.Range(0, 2);
             }
             else
             {
                 wave = true;
-                RayWave wavePeice = new RayWave(start, waveLth);
+                RayWave wavePeice = new RayWave(start, waveLth,prefab);
+                // Fixed Amplitude and Thickness of wave
+
+                //We want the range of 0 to pi
                 waveMvnt = new Vector3(0, height * Mathf.Sin(theta), 0);
                 start += new Vector3(.01f, .0f, 0);
                 theta += speed * Mathf.Sin(.05f) * Time.time;
-                Debug.DrawRay(start, waveMvnt, Color.cyan, waveLth);
 
-                wavePeice = new RayWave(start, waveLth);
+                theta = Mathf.Clamp(theta, 0, Mathf.PI);
+                prefab.transform.localScale = new Vector3(0.1f,Mathf.Sin(theta),0.1f);
+
+                Debug.DrawRay(start, waveMvnt, Color.cyan, waveLth);
+                Instantiate(prefab, wavePeice.start, transform.rotation, transform);
+
+                wavePeice = new RayWave(start, waveLth, prefab);
                 waveMvnt = new Vector3(0, .05f, 0);
                 start += new Vector3(.01f, .0f, 0);
 
@@ -71,5 +82,10 @@ public class WaveTest : MonoBehaviour
                 Debug.DrawRay(start, waveMvnt, Color.cyan, waveLth);
             }
         }
+    }
+
+    void ShowWave()
+    {
+
     }
 }
