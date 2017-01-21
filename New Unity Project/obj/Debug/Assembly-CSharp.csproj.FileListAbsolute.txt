@@ -27,3 +27,5 @@ C:\Users\Global Game Jam\Documents\New Unity Project\Temp\bin\Debug\UnityEngine.
 C:\Users\Global Game Jam\Documents\New Unity Project\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\Global Game Jam\Documents\New Unity Project\obj\Debug\Assembly-CSharp.dll
 C:\Users\Global Game Jam\Documents\New Unity Project\obj\Debug\Assembly-CSharp.pdb
+C:\Users\nitroglycerine\Documents\New Unity Project\obj\Debug\Assembly-CSharp.dll
+C:\Users\nitroglycerine\Documents\New Unity Project\obj\Debug\Assembly-CSharp.pdb

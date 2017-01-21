@@ -7,7 +7,7 @@ public class FluidSim : MonoBehaviour
 	public float dt = 0.8f;
 	public float visc = 0;
 	public float volatilize = 0;
-	public int iterations = 10;
+	public int iterations = 2;
 	public Texture2D border;
 	public Texture2D flow;
 	
@@ -23,11 +23,17 @@ public class FluidSim : MonoBehaviour
 	void Start()
 	{
 		// duplicate the original texture and assign to the material
+		/*
 		tex = Instantiate(GetComponent<Renderer>().material.mainTexture) as Texture2D;
 		GetComponent<Renderer>().material.mainTexture = tex;
 		// get grid dimensions from texture
 		width = tex.width;
 		height = tex.height;
+		*/
+		width = 128; height = 128;
+		tex = new Texture2D (width, height, TextureFormat.ARGB32, false);
+		GetComponent<Renderer> ().material.mainTexture = tex;
+		Debug.Log (string.Format("{0}x{1}", width, height));
 		// initialize fluid arrays
 		rowSize = width + 2;
 		size = (width+2)*(height+2);
@@ -45,10 +51,12 @@ public class FluidSim : MonoBehaviour
 			dens_prev[i] = u_prev[i] = v_prev[i] = dens[i] = u[i] = v[i] = 0;
 			int y = i / rowSize;
 			int x = i % rowSize;
+			/*
 			bndX[i] = border.GetPixel(x, y).grayscale - border.GetPixel(x+1, y).grayscale;
 			bndY[i] = border.GetPixel(x, y).grayscale - border.GetPixel(x, y+1).grayscale;
 			velX[i] = (flow.GetPixel(x, y).grayscale - flow.GetPixel(x+1, y).grayscale) * 0.1f;
 			velY[i] = (flow.GetPixel(x, y).grayscale - flow.GetPixel(x, y+1).grayscale) * 0.1f;
+			*/
 		}
 	}
 
@@ -137,10 +145,98 @@ public class FluidSim : MonoBehaviour
 			}
 		}
 	}
+
+	/**/
+	void multiplyASolver(float[] x_in, float[] x_out, float a, float c, int boundary) {
+		for (int i=0; i<=width+1; i++) {
+			for (int j=0; j<=height+1; j++) {
+				if (i == 0 || j == 0 || i == width + 1 || j == height + 1)
+					x_out [i * rowSize + j] = x_in [i * rowSize + j];
+				else {
+					float elt = (c - 4.0f * a) * x_in [i * rowSize + j];
+					if (i == 1) {
+						if (boundary == 1) {
+							elt = elt + a * x_in [1 * rowSize + j] + a * x_in [1 * rowSize + j];
+						}
+					} else {
+						elt = elt - a * x_in [(i - 1) * rowSize + j] + a * x_in [i * rowSize + j];
+					}
+
+					if (i == width) {
+						if ( boundary == 1) {
+							elt = elt + a*x_in[width*rowSize+j] + a*x_in[width*rowSize+j];
+						} else { elt = elt - a*x_in[(i+1)*rowSize + j] + a*x_in[i*rowSize + j]; }
+					}
+							
+					if(j == 1) {
+						if(boundary == 2) elt = elt + a*x_in[i*rowSize + 1] + a*x_in[i*rowSize + 1];
+					} else { elt = elt - a*x_in[i*rowSize + j-1] + a*x_in[i*rowSize + j]; }
+
+					if(j == height) {
+						if(boundary == 2) elt = elt + a*x_in[i*rowSize + height] + a*x_in[i*rowSize + j];
+					} else { elt = elt - a*x_in[i * rowSize + j+1] + a*x_in[i*rowSize + j]; }
+
+					x_out[i*rowSize + j] = elt;
+				}
+			}
+		}
+	}
+
+	float dot(float[] x, float[] y) {
+		float ret = 0.0f;
+		for (int i=0; i<(height+2)*(width+2);i++) ret+=x[i]*y[i];
+		return ret;
+	}
+
+	// Conjugate Gradient Algorithm
+	void lin_solve_CG(int b, float[] x, float[] x0, float a, float c) {
+		int S = rowSize * (height + 2);
+		Array.Copy (x, x0, S);
+		float[] r = new float[S];
+
+		// r = Ax
+		multiplyASolver (x, r, a, c, b);
+
+		// r = b - Ax
+		for (int i = 0; i < S; i++) {
+			r [i] = x0 [i] - r [i];
+		}
+			
+		float[] p = new float[S];
+		Array.Copy (p, r, S);
+
+		float[] q = new float[S];
+		float rho, rho_old;
+
+		rho = dot (r, r);
+
+		for (int iter = 0; iter < 5; iter++) {
+			if (rho == 0)
+				break;
+			multiplyASolver (p, q, a, c, b); // q = A p
+			float p_dot_q = dot(p, q);
+			float alpha = rho / p_dot_q;
+
+			for (int i = 0; i < S; i++) {
+				x [i] = x [i] + alpha * p [i];
+				r [i] = r [i] - alpha * q [i];
+			}
+
+			rho_old = rho;
+			rho = dot (r, r);
+			float beta = rho / rho_old;
+			for (int i = 0; i < S; i++) {
+				p [i] = r [i] + beta * p [i];
+			}
+			set_bnd (b, x);
+		}
+	}
+
 	
 	void diffuse(float[] x, float[] x0)
 	{
 		lin_solve(x, x0, volatilize, 1 + 4 * volatilize);
+		//lin_solve_CG(0, x, x0, volatilize, 1 + 4 * volatilize);
 	}
 	
 	void lin_solve2(float[] x, float[] x0, float[] y, float[] y0, float a, float c)
@@ -271,13 +367,13 @@ public class FluidSim : MonoBehaviour
 	}
 	
     public void AddSomething(Vector3 l, Vector3 v) // Should be translated to local by this time
-    {
+	{
         int x = (int)(l.x * width), y = (int)(l.y * height);
-        int i = (x + 1) + (y + 1) * rowSize;
-        Debug.Log(String.Format("l={0} v={4} x={1}, y={2}, i={3}", l.ToString(), x, y, i, v.ToString()));
+		int i = (x + 1) + (y + 1) * rowSize;
+		Debug.Log (string.Format ("v={0}, i={1}", v.ToString(), i));
         dens[i] += 3f;
         u[i] += v.x;
-        v[i] += v.y;
+        this.v[i] += v.y;
     }
 
 	void UserInput()
@@ -291,8 +387,7 @@ public class FluidSim : MonoBehaviour
 			if (Physics.Raycast(ray, out hit, 100)) {
 				// determine indices where the user clicked
 				int x = (int)(hit.point.x * width);
-				int y = (int)(hit.point.z * width);
-                Debug.Log(string.Format("Ray o:{0}, x={1}, y={2}", ray.origin.ToString(), x, y));
+				int y = (int)((hit.point.z + 0.375f) * height);
 				int i = (x + 1) + (y + 1) * rowSize;
 				if (x < 1 || x > width-1 || y < 1 || y > height-1) return;
 				// add or dec density

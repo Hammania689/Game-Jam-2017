@@ -1,1 +1,1 @@
-I'm working on getting a fluid simulation in Unity that the user can interact with.
+Open the scene called "Main (Completed)" and move the UFO using arrow keys. The UFO will perturb the fluid field under it.
