@@ -1,15 +1,18 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Collections.Generic;
 
 public class WaveTest : MonoBehaviour
 {
-    public float waveLth;
+    public float waveLth, speed = 1, height = 2;
+    public float theta;
+    public int tick, timeLimit = 50;
+    public Vector3 start, waveMvnt = new Vector3(1, 0, 0);
 
+    bool wave;
     RaycastHit ray;
     RaycastHit hit;
-    Vector3 start, waveMvnt = new Vector3(1,0,0);
-    float theta;
 
     public struct RayWave
     {
@@ -22,18 +25,51 @@ public class WaveTest : MonoBehaviour
             this.start = spwnPnt;
         }
     }
-	
-	void Update ()
+
+    void Start()
     {
-        for(int rayCount = 0; rayCount < 10; rayCount++)
+    }
+
+    void Update()
+    {
+        //WaveGen();
+    }
+
+    void FixedUpdate()
+    {
+        WaveGen();
+    }
+
+    void WaveGen()
+    {
+
+        tick++;
+        if (tick >= timeLimit)
         {
-            RayWave smallray = new RayWave(start, waveLth);
-            waveMvnt = new Vector3(Mathf.Sin(theta), 0,0);
-            start += new Vector3(smallray.start.x, .1f ,0);
-            theta += Mathf.Sin(30);
-            if (Physics.Raycast(start,waveMvnt,waveLth))
-                print("The ray " + rayCount);
-            Debug.DrawRay(start,waveMvnt, Color.green,waveLth);
+            if (theta >= 6.30f)
+            {
+                wave = false;
+                tick = 0;
+                theta = 0;
+                height = Random.Range(0, 5);
+            }
+            else
+            {
+                wave = true;
+                RayWave wavePeice = new RayWave(start, waveLth);
+                waveMvnt = new Vector3(0, height * Mathf.Sin(theta), 0);
+                start += new Vector3(.01f, .0f, 0);
+                theta += speed * Mathf.Sin(.05f) * Time.time;
+                Debug.DrawRay(start, waveMvnt, Color.cyan, waveLth);
+
+                wavePeice = new RayWave(start, waveLth);
+                waveMvnt = new Vector3(0, .05f, 0);
+                start += new Vector3(.01f, .0f, 0);
+
+                if (Physics.Raycast(start,waveMvnt,wavePeice.length))
+                    print("Player was hit at " + hit.point);
+                Debug.DrawRay(start, waveMvnt, Color.cyan, waveLth);
+            }
         }
     }
 }
