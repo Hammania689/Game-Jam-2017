@@ -199,7 +199,6 @@ public class InputHandler : MonoBehaviour
 
 
 		if (jump == true && states.jumping == false) {
-			Debug.Log ("Jump pressed");
 			FluidSim fs = propulsion_quad.GetComponent<FluidSim> ();
 			fs.OnCapsuleJumped ();
 		}

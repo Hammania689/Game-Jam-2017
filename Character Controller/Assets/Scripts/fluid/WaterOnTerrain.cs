@@ -7,6 +7,7 @@ public class WaterOnTerrain : MonoBehaviour
 	public float heightScale = 10;
 	public float flow = 1.5f;
 	public int iterations = 5;
+	public float fade = 1.0f;
 	
 	Texture2D tex;
 	int width;
@@ -16,6 +17,8 @@ public class WaterOnTerrain : MonoBehaviour
 	Color[] color_buffer;
 
 	int num_frame = 0;
+
+	bool NO_OBSTACLES = true;
 
 	void Start()
 	{
@@ -48,20 +51,44 @@ public class WaterOnTerrain : MonoBehaviour
 		liquid = new float[width, height];
 		// read ground texture data
 		ground = new float[width, height];
-		for (int z = 0; z < height; z++) {
-			for (int x = 0; x < width; x++) {
-				ground[x, z] = relief.GetPixel(x, z).grayscale * heightScale;
+
+		if (!NO_OBSTACLES) {
+			for (int z = 0; z < height; z++) {
+				for (int x = 0; x < width; x++) {
+					ground [x, z] = relief.GetPixel (x, z).grayscale * heightScale;
+				}
+			}
+		} else {
+			for (int z = 0; z < height; z++) {
+				for (int x = 0; x < width; x++) {
+					ground [x, z] = 1.0f;
+				}
 			}
 		}
+
+		GameMasterObject.fluid_background = this;
+	}
+
+	// ???
+	public void AddSomeFluid(float x, float y) {
+		// Clip Space to Local Space.
+		x = x + 0.5f; y = y + 0.5f;
+		if (x < 1 && x > 0 && y < 1 && y > 0)
+			liquid [(int)(x * width), (int) (y * height)] += 15.0f;
 	}
 	
 	void Update()
 	{
 		UserInput();
 		Fluid();
-		Draw();
 
-		liquid [num_frame % width, height / 2] += 10.0f;
+		for (int z = 1; z < height - 1; z++) {
+			for (int x = 1; x < width - 1; x++) {
+				liquid [x, z] *= fade;
+			}
+		}
+		Draw();
+		//liquid [num_frame % width, height / 2] += 10.0f;
 		num_frame++;
 	}
 	
@@ -70,6 +97,10 @@ public class WaterOnTerrain : MonoBehaviour
 			for (int z = 1; z < height - 1; z++) {
 				for (int x = 1; x < width - 1; x++) {
 					float cLiquid = liquid[x, z];
+
+					if (cLiquid < 0.1)
+						continue;
+
 					float cGround = ground[x, z];
 					float nHeight, hDiff;
 					int i;

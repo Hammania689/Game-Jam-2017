@@ -14,6 +14,10 @@ public class GameMasterObject : MonoBehaviour
     public static List<Transform> dragonsMonsters;
     public static List<Transform> defenseItems;
     public static List<GameObject> impacts;
+
+	public static List<GameObject> bullets = new List<GameObject>();
+	public static Dictionary<GameObject, long> bullets_life = new Dictionary<GameObject, long>();
+	public static WaterOnTerrain fluid_background;
     
     public static GameObject playerUse;
     public static Camera camInUse;
@@ -60,6 +64,9 @@ public class GameMasterObject : MonoBehaviour
 
     public bool lockCursor = false;
     public GameObject inactiveCanvas;
+
+
+	public GameObject fluid_background_quad;
     #endregion
 
     #region nonstatic private members
@@ -243,7 +250,18 @@ public class GameMasterObject : MonoBehaviour
         if (timerText2 != null)
         {
             timerText2.text = minutes;
-        }        
+        }   
+
+		// Interact with background.
+		long curr_tick = System.DateTime.Now.Ticks;
+		const long LIFELIMIT = 500 * 10000; // 10000 Ticks = 1 Millisecond
+		for (int i=0; i<bullets.Count; i++) {
+			GameObject bullet = bullets [i];
+			if (bullets_life [bullet] < curr_tick - LIFELIMIT)
+				continue;
+			Vector3 l = fluid_background_quad.transform.InverseTransformPoint (bullet.transform.position);
+			fluid_background.AddSomeFluid (l.x, l.y);
+		}
     }       
 
     public void SetToTPS()

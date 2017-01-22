@@ -83,6 +83,8 @@ public class HandleShooting : MonoBehaviour
                 }
 
                 GameObject thisobj = Instantiate((GameObject)bullets, graphicBulletSpawn.position, graphicBulletSpawn.rotation);
+				GameMasterObject.bullets.Add (thisobj);
+				GameMasterObject.bullets_life.Add (thisobj, System.DateTime.Now.Ticks);
 
                 Rigidbody rb = thisobj.GetComponent<Rigidbody>();                
                 if (rb != null)

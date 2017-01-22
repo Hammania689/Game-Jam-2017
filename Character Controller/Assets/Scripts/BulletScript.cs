@@ -9,7 +9,11 @@ public class BulletScript : MonoBehaviour
 	{
 		
 	}
-	
+
+	void Awake() {
+		Debug.Log ("A bullet has been created");
+	}
+
 	void Update () 
 	{
 		

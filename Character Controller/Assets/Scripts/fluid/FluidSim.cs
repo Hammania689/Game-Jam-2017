@@ -34,6 +34,12 @@ public class FluidSim : MonoBehaviour
 	int fire_life = 0;
 	int fade_life = 0;
 
+	public enum JetState{
+		NORMAL,
+		JUMPING
+	};
+	public JetState state = JetState.NORMAL;
+
 	// For the propulsion flame
 	// When hit something fade fire
 	void OnTriggerEnter (Collider other) {
@@ -114,19 +120,24 @@ public class FluidSim : MonoBehaviour
 		double rmsd = ComputeRMSD (dens, dens_prev);
 //		Debug.Log (string.Format("RMSD = {0}", rmsd));
 
+		float c0 = 0.0001f, c1 = 0.0001f, d0 = 0.009f;
 		if (fire_life-- > 0) {
-			for (int x = (int)(width * 0.4f); x < (int)(width * 0.6f); x++) {
-				for (int y = (int)(height * 0.65f); y < (int)(height * 0.75f); y++) {
-					int idx = y * (width + 2) + x;
-					v [idx] -= (float)(Math.Max (0.0, 0.002f * (float)Math.Sin (num_frame / 2.0f) + 0.004f));
-					dens [idx] += 0.035f;
-				}
+			c0 = 0.004f;
+			c1 = 0.003f;
+			d0 = 0.045f;
+		}
+			
+		for (int x = (int)(width * 0.4f); x < (int)(width * 0.6f); x++) {
+			for (int y = (int)(height * 0.65f); y < (int)(height * 0.75f); y++) {
+				int idx = y * (width + 2) + x;
+				v [idx] -= (float)(Math.Max (0.0, c1 * (float)Math.Sin (num_frame / 2.0f) + c0));
+				dens [idx] += d0;
 			}
 		}
 
 		if (fade_life-- > 0) {
 			for (int x = 0; x <= width+2; x++) {
-				for (int y = 0; y <= height; y++) {
+				for (int y = 0; y <= height + 1; y++) {
 					int idx = y * (width + 2) + x;
 					dens [idx] *= (fire_life > 15) ? 0.94f : 0.80f;
 				}
