@@ -20,6 +20,7 @@ Adobe Photoshop, Autodesk Maya, Autodesk Sketchbook, Blender, Medibang Paint Pro
 
 
 ![dsc_0051](https://cloud.githubusercontent.com/assets/20171200/22322992/3fd5519a-e365-11e6-8f98-cc1edd51dbeb.jpg)
-## Credits: 
-### Hameed Abdul, Shaikha Al-Mashaykhi, Sui Chen, Trevon Cooper, Jonathan L Delaney, Kyle Eastin, Afsaneh Ghazavi, Jun Lin, Chase Mitchusson, Tarlan Mokhtarzadeh, Holly Moore, Sahar Rahimi, Robin Tallitsch, Jonathan Wingerter
+
+# Credits: 
+Hameed Abdul, Shaikha Al-Mashaykhi, Sui Chen, Trevon Cooper, Jonathan L Delaney, Kyle Eastin, Afsaneh Ghazavi, Jun Lin, Chase Mitchusson, Tarlan Mokhtarzadeh, Holly Moore, Sahar Rahimi, Robin Tallitsch, Jonathan Wingerter
 
